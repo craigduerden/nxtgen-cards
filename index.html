@@ -1,0 +1,960 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NxtGen Cards — Create Your Card Pack</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --gold: #C9A84C;
+    --gold-light: #E8C96A;
+    --gold-pale: rgba(201,168,76,0.08);
+    --black: #080808;
+    --surface: #111111;
+    --surface2: #181818;
+    --surface3: #202020;
+    --border: rgba(201,168,76,0.18);
+    --border-hover: rgba(201,168,76,0.55);
+    --text: #F0EDE6;
+    --text-muted: #777770;
+    --red: #C0392B;
+    --green: #27AE60;
+    --green-pale: rgba(39,174,96,0.1);
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--black);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 300;
+    min-height: 100vh;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background:
+      radial-gradient(ellipse 70% 40% at 50% 0%, rgba(201,168,76,0.06) 0%, transparent 60%),
+      radial-gradient(ellipse 40% 30% at 100% 100%, rgba(201,168,76,0.03) 0%, transparent 60%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .wrap {
+    position: relative;
+    z-index: 1;
+    max-width: 780px;
+    margin: 0 auto;
+    padding: 64px 24px 100px;
+  }
+
+  /* ── HEADER ── */
+  .header {
+    text-align: center;
+    margin-bottom: 64px;
+    animation: riseIn 0.7s cubic-bezier(.22,1,.36,1) both;
+  }
+
+  .eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 20px;
+    opacity: 0.9;
+  }
+  .eyebrow::before, .eyebrow::after {
+    content: '';
+    width: 28px;
+    height: 1px;
+    background: var(--gold);
+    opacity: 0.4;
+  }
+
+  .logo {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(64px, 14vw, 110px);
+    letter-spacing: 0.04em;
+    line-height: 0.88;
+    color: var(--text);
+  }
+  .logo em {
+    color: var(--gold);
+    font-style: normal;
+    display: block;
+  }
+
+  .tagline {
+    margin-top: 20px;
+    font-size: 15px;
+    color: var(--text-muted);
+    letter-spacing: 0.02em;
+    line-height: 1.65;
+  }
+  .tagline strong { color: var(--text); font-weight: 400; }
+
+  /* ── PACK SELECTOR ── */
+  .pack-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 10px;
+    margin-bottom: 0;
+  }
+
+  @media (max-width: 680px) { .pack-grid { grid-template-columns: 1fr 1fr; } }
+  @media (max-width: 420px) { .pack-grid { grid-template-columns: 1fr; } }
+
+  .pack-radio { display: none; }
+  .pack-radio + label {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    padding: 16px 8px 14px;
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    cursor: pointer;
+    transition: all 0.2s;
+    background: var(--surface2);
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .pack-radio + label:hover {
+    border-color: var(--border-hover);
+    background: var(--surface3);
+  }
+  .pack-radio:checked + label {
+    border-color: var(--gold);
+    background: var(--gold-pale);
+  }
+  .pack-radio:checked + label::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: var(--gold);
+  }
+
+  .pack-badge {
+    position: absolute;
+    top: 6px; right: 6px;
+    background: var(--green);
+    color: #fff;
+    font-family: 'DM Mono', monospace;
+    font-size: 8px;
+    letter-spacing: 0.1em;
+    padding: 2px 5px;
+    border-radius: 2px;
+  }
+  .pack-badge.hot { background: var(--red); }
+
+  .pack-icon { font-size: 24px; line-height: 1; margin-bottom: 2px; }
+  .pack-name {
+    font-family: 'DM Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    line-height: 1.3;
+  }
+  .pack-radio:checked + label .pack-name { color: var(--gold); }
+  .pack-price {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 26px;
+    color: var(--text);
+    letter-spacing: 0.05em;
+  }
+  .pack-radio:checked + label .pack-price { color: var(--gold); }
+  .pack-desc {
+    font-size: 10px;
+    color: var(--text-muted);
+    line-height: 1.4;
+  }
+
+  /* Pack details reveal */
+  .pack-detail {
+    display: none;
+    background: var(--gold-pale);
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    padding: 16px 20px;
+    margin-top: 12px;
+    font-size: 12px;
+    color: var(--text-muted);
+    line-height: 1.7;
+    animation: fadeIn 0.25s ease both;
+  }
+  .pack-detail.visible { display: block; }
+  .pack-detail strong { color: var(--gold); }
+
+  /* ── FORM CARD ── */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    overflow: hidden;
+    margin-top: 32px;
+    animation: riseIn 0.7s cubic-bezier(.22,1,.36,1) 0.15s both;
+  }
+
+  .section {
+    padding: 28px 32px;
+    border-bottom: 1px solid rgba(201,168,76,0.1);
+  }
+  .section:last-child { border-bottom: none; }
+
+  @media (max-width: 560px) { .section { padding: 22px 18px; } }
+
+  .sec-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 20px;
+    opacity: 0.85;
+  }
+
+  /* Upload */
+  .drop {
+    border: 1px dashed var(--border-hover);
+    border-radius: 3px;
+    padding: 44px 20px;
+    text-align: center;
+    cursor: pointer;
+    position: relative;
+    background: var(--surface2);
+    transition: all 0.2s;
+  }
+  .drop:hover, .drop.over { border-color: var(--gold); background: var(--gold-pale); }
+  .drop input { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
+  .drop-icon { font-size: 36px; margin-bottom: 12px; opacity: 0.6; }
+  .drop-title { font-size: 14px; font-weight: 500; color: var(--text); margin-bottom: 5px; }
+  .drop-sub { font-size: 11px; color: var(--text-muted); }
+
+  .preview-row {
+    display: none;
+    align-items: center;
+    gap: 14px;
+    background: var(--surface3);
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    padding: 12px 14px;
+    margin-top: 12px;
+  }
+  .preview-row.show { display: flex; }
+  .preview-thumb { width: 52px; height: 52px; object-fit: cover; border-radius: 2px; border: 1px solid var(--border); }
+  .preview-info { flex: 1; }
+  .preview-name { font-size: 13px; font-weight: 400; }
+  .preview-size { font-size: 11px; color: var(--text-muted); font-family: 'DM Mono', monospace; }
+  .preview-rm { background: none; border: none; color: var(--text-muted); font-size: 20px; cursor: pointer; padding: 2px 6px; transition: color 0.2s; }
+  .preview-rm:hover { color: var(--red); }
+
+  /* Photo tips */
+  .tips {
+    background: var(--surface3);
+    border-radius: 3px;
+    padding: 14px 16px;
+    margin-top: 14px;
+    font-size: 11px;
+    color: var(--text-muted);
+    line-height: 1.8;
+  }
+  .tips strong { color: var(--text); font-weight: 400; display: block; margin-bottom: 4px; font-family: 'DM Mono', monospace; font-size: 9px; letter-spacing: 0.15em; text-transform: uppercase; }
+
+  /* Grid */
+  .g2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .g3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; }
+  @media (max-width: 500px) { .g2, .g3 { grid-template-columns: 1fr; } }
+
+  /* Fields */
+  .field { display: flex; flex-direction: column; gap: 7px; }
+  label.lbl {
+    font-family: 'DM Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+  }
+  input[type=text], input[type=email], input[type=number], select, textarea {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    font-weight: 300;
+    padding: 11px 13px;
+    border-radius: 3px;
+    outline: none;
+    width: 100%;
+    -webkit-appearance: none;
+    transition: border-color 0.2s, background 0.2s;
+  }
+  input:focus, select:focus, textarea:focus { border-color: var(--gold); background: var(--gold-pale); }
+  input::placeholder, textarea::placeholder { color: var(--text-muted); opacity: 0.4; }
+  select {
+    cursor: pointer;
+    background-image: url("data:image/svg+xml,%3Csvg width='10' height='6' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%23C9A84C' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 13px center;
+    padding-right: 34px;
+  }
+  select option { background: #181818; }
+  textarea { resize: vertical; min-height: 72px; line-height: 1.55; }
+
+  .err { font-size: 10px; color: var(--red); font-family: 'DM Mono', monospace; display: none; margin-top: -3px; }
+  .field.bad input, .field.bad select, .field.bad textarea { border-color: var(--red); }
+  .field.bad .err { display: block; }
+
+  /* Stats */
+  .stats-row { display: grid; grid-template-columns: repeat(4,1fr); gap: 10px; }
+  @media (max-width: 500px) { .stats-row { grid-template-columns: 1fr 1fr; } }
+  .stat-box {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    padding: 12px 8px;
+    text-align: center;
+    transition: border-color 0.2s;
+  }
+  .stat-box:focus-within { border-color: var(--gold); }
+  .stat-box label {
+    display: block;
+    font-family: 'DM Mono', monospace;
+    font-size: 8px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 5px;
+  }
+  .stat-box input {
+    background: transparent;
+    border: none;
+    text-align: center;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 32px;
+    letter-spacing: 0.04em;
+    color: var(--text);
+    padding: 0;
+    width: 100%;
+  }
+  .stat-box input:focus { outline: none; }
+  .stat-box input::placeholder { font-size: 24px; opacity: 0.15; }
+
+  /* Card styles */
+  .style-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 8px; }
+  @media (max-width: 560px) { .style-grid { grid-template-columns: 1fr 1fr; } }
+  .style-r { display: none; }
+  .style-r + label {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    padding: 14px 6px 12px;
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    cursor: pointer;
+    transition: all 0.2s;
+    background: var(--surface2);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 11px;
+    color: var(--text-muted);
+    text-align: center;
+    line-height: 1.3;
+  }
+  .style-r + label:hover { border-color: var(--border-hover); color: var(--text); }
+  .style-r:checked + label { border-color: var(--gold); background: var(--gold-pale); color: var(--gold); }
+  .s-icon { font-size: 20px; }
+
+  /* Spacer */
+  .gap { height: 14px; }
+  .gap-sm { height: 10px; }
+
+  /* Season pass note */
+  .season-note {
+    background: var(--surface3);
+    border-left: 3px solid var(--gold);
+    padding: 12px 16px;
+    font-size: 12px;
+    color: var(--text-muted);
+    border-radius: 0 3px 3px 0;
+    line-height: 1.6;
+    display: none;
+  }
+  .season-note.show { display: block; }
+  .season-note strong { color: var(--gold); }
+
+  /* Squad note */
+  .squad-note {
+    background: var(--green-pale);
+    border-left: 3px solid var(--green);
+    padding: 12px 16px;
+    font-size: 12px;
+    color: var(--text-muted);
+    border-radius: 0 3px 3px 0;
+    line-height: 1.6;
+    display: none;
+  }
+  .squad-note.show { display: block; }
+  .squad-note strong { color: var(--green); }
+
+  /* Submit */
+  .submit-row {
+    padding: 24px 32px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    background: var(--surface2);
+    flex-wrap: wrap;
+  }
+  @media (max-width: 560px) { .submit-row { padding: 18px; } }
+
+  .submit-info { font-size: 11px; color: var(--text-muted); line-height: 1.6; flex: 1; min-width: 180px; }
+
+  .btn {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 17px;
+    letter-spacing: 0.1em;
+    color: var(--black);
+    background: var(--gold);
+    border: none;
+    padding: 14px 36px;
+    border-radius: 2px;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.15s;
+    white-space: nowrap;
+    flex-shrink: 0;
+    position: relative;
+  }
+  .btn:hover { background: var(--gold-light); transform: translateY(-1px); }
+  .btn:active { transform: translateY(0); }
+  .btn:disabled { opacity: 0.45; cursor: not-allowed; transform: none; }
+  .btn .loading { display: none; align-items: center; gap: 8px; }
+  .btn.working .label { display: none; }
+  .btn.working .loading { display: flex; }
+  .spin { width: 14px; height: 14px; border: 2px solid rgba(0,0,0,0.25); border-top-color: #000; border-radius: 50%; animation: spin 0.6s linear infinite; }
+
+  /* Status */
+  .banner { display: none; padding: 16px 32px; font-size: 13px; align-items: center; gap: 12px; border-top: 1px solid var(--border); }
+  .banner.ok { display: flex; background: rgba(39,174,96,0.08); color: #5DD88A; }
+  .banner.fail { display: flex; background: rgba(192,57,43,0.08); color: #E87B6E; }
+  .banner-icon { font-size: 18px; flex-shrink: 0; }
+
+  /* Digital delivery info strip */
+  .delivery-strip {
+    display: flex;
+    gap: 0;
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    overflow: hidden;
+    margin-top: 0;
+  }
+  .d-item {
+    flex: 1;
+    padding: 12px 8px;
+    text-align: center;
+    border-right: 1px solid var(--border);
+    font-size: 10px;
+    color: var(--text-muted);
+    line-height: 1.5;
+  }
+  .d-item:last-child { border-right: none; }
+  .d-item .d-icon { font-size: 18px; display: block; margin-bottom: 4px; }
+  @media (max-width: 560px) {
+    .delivery-strip { flex-wrap: wrap; }
+    .d-item { flex: 0 0 50%; border-bottom: 1px solid var(--border); }
+  }
+
+  @keyframes riseIn { from { opacity:0; transform:translateY(18px); } to { opacity:1; transform:none; } }
+  @keyframes fadeIn { from { opacity:0; } to { opacity:1; } }
+  @keyframes spin { to { transform:rotate(360deg); } }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- HEADER -->
+  <header class="header">
+    <div class="eyebrow">Personalised Football Card Packs</div>
+    <div class="logo">Nxt<em>Gen</em></div>
+    <p class="tagline">
+      Upload your child's photo. We generate a <strong>professional card pack</strong><br>
+      delivered instantly — 5 files, every style, ready to share, print or display.
+    </p>
+  </header>
+
+  <!-- PACK SELECTOR -->
+  <div class="sec-label" style="margin-bottom:14px;">Choose Your Pack</div>
+  <div class="pack-grid">
+
+    <div>
+      <input type="radio" name="pack" id="p-single" value="single" class="pack-radio" checked>
+      <label for="p-single">
+        <span class="pack-icon">🃏</span>
+        <span class="pack-name">Single Card</span>
+        <span class="pack-price">£7.99</span>
+        <span class="pack-desc">1 style of your choice</span>
+      </label>
+    </div>
+
+    <div>
+      <input type="radio" name="pack" id="p-double" value="double" class="pack-radio">
+      <label for="p-double">
+        <span class="pack-badge">SAVE £2.99</span>
+        <span class="pack-icon">👕</span>
+        <span class="pack-name">Double Pack</span>
+        <span class="pack-price">£12.99</span>
+        <span class="pack-desc">Home + Away kit</span>
+      </label>
+    </div>
+
+    <div>
+      <input type="radio" name="pack" id="p-bundle" value="bundle" class="pack-radio">
+      <label for="p-bundle">
+        <span class="pack-badge">BEST VALUE</span>
+        <span class="pack-icon">💎</span>
+        <span class="pack-name">Collector's Bundle</span>
+        <span class="pack-price">£24.99</span>
+        <span class="pack-desc">All 8 styles</span>
+      </label>
+    </div>
+
+    <div>
+      <input type="radio" name="pack" id="p-season" value="season" class="pack-radio">
+      <label for="p-season">
+        <span class="pack-badge hot">NEW</span>
+        <span class="pack-icon">📅</span>
+        <span class="pack-name">Season Pass</span>
+        <span class="pack-price">£34.99</span>
+        <span class="pack-desc">New card every month × 6</span>
+      </label>
+    </div>
+
+    <div>
+      <input type="radio" name="pack" id="p-squad" value="squad" class="pack-radio">
+      <label for="p-squad">
+        <span class="pack-badge">TEAMS</span>
+        <span class="pack-icon">👥</span>
+        <span class="pack-name">Squad Pack</span>
+        <span class="pack-price">£5.99<small style="font-size:14px">/player</small></span>
+        <span class="pack-desc">Whole team · min 5 players</span>
+      </label>
+    </div>
+
+  </div>
+
+  <!-- Pack detail descriptions -->
+  <div class="pack-detail" id="detail-single">
+    <strong>Single Card Pack</strong> — Choose any one of the 8 NxtGen card styles. You'll receive 5 professional files: trading card, phone wallpaper, Instagram square, A4 print poster and match day programme version.
+  </div>
+  <div class="pack-detail" id="detail-double">
+    <strong>Double Pack</strong> — Your child's card in both Home Kit and Away Kit styles. 10 files total (5 per style). Save £2.99 vs buying separately.
+  </div>
+  <div class="pack-detail" id="detail-bundle">
+    <strong>Collector's Bundle</strong> — The complete NxtGen set. All 8 card styles for your child — Chrome, Stealth, Legends, Inferno, Ice, Golden, Home Kit and Away Kit. 40 files total. Save £15.93 vs buying individually.
+  </div>
+  <div class="pack-detail" id="detail-season">
+    <strong>Season Pass</strong> — A brand new card style delivered to your inbox every month for 6 months. Each one a surprise reveal. Perfect for the season — <strong>starts this month</strong> and runs through to the end of the football year. Your child collects a different NxtGen card style each month. Pay once, receive 6 packs.
+  </div>
+  <div class="pack-detail" id="detail-squad">
+    <strong>Squad Pack</strong> — Order for your whole team at £5.99 per player (minimum 5). Each player gets their own individual card pack in the same style. Managers: add all players below using the + button. Perfect for end of season or a team launch. <strong>Each player's parent receives their child's pack directly to their own email.</strong>
+  </div>
+
+  <!-- MAIN FORM -->
+  <form id="orderForm" onsubmit="return false;">
+  <div class="card">
+
+    <!-- 01: Photo -->
+    <div class="section">
+      <div class="sec-label">01 — Player Photo</div>
+      <div class="drop" id="dropZone">
+        <input type="file" id="photoFile" accept="image/jpeg,image/png,image/webp">
+        <div class="drop-icon">📸</div>
+        <div class="drop-title">Drop photo here or click to browse</div>
+        <div class="drop-sub">JPG · PNG · WebP · Max 10MB</div>
+      </div>
+      <div class="preview-row" id="previewRow">
+        <img class="preview-thumb" id="prevThumb" src="" alt="">
+        <div class="preview-info">
+          <div class="preview-name" id="prevName"></div>
+          <div class="preview-size" id="prevSize"></div>
+        </div>
+        <button class="preview-rm" id="removeBtn" type="button">×</button>
+      </div>
+      <div class="tips">
+        <strong>📷 Photo Tips — for the best card result</strong>
+        ✓ Clear face, looking forward &nbsp;·&nbsp; ✓ Good lighting &nbsp;·&nbsp; ✓ Just your child in frame<br>
+        ✗ No sunglasses or hats &nbsp;·&nbsp; ✗ Avoid blurry, dark or group shots
+      </div>
+    </div>
+
+    <!-- 02: Player -->
+    <div class="section">
+      <div class="sec-label">02 — Player Details</div>
+      <div class="g2" style="margin-bottom:14px;">
+        <div class="field" id="f-playerName">
+          <label class="lbl">Player Name *</label>
+          <input type="text" id="playerName" placeholder="e.g. Jake Thompson">
+          <span class="err">Required</span>
+        </div>
+        <div class="field" id="f-teamName">
+          <label class="lbl">Club / Team *</label>
+          <input type="text" id="teamName" placeholder="e.g. Ilkley Town AFC">
+          <span class="err">Required</span>
+        </div>
+      </div>
+      <div class="g3">
+        <div class="field" id="f-position">
+          <label class="lbl">Position *</label>
+          <select id="position">
+            <option value="">Select…</option>
+            <option>Goalkeeper</option>
+            <option>Right Back</option>
+            <option>Centre Back</option>
+            <option>Left Back</option>
+            <option>Defensive Midfielder</option>
+            <option>Central Midfielder</option>
+            <option>Attacking Midfielder</option>
+            <option>Right Winger</option>
+            <option>Left Winger</option>
+            <option>Striker</option>
+            <option>Centre Forward</option>
+          </select>
+          <span class="err">Required</span>
+        </div>
+        <div class="field">
+          <label class="lbl">Nationality</label>
+          <input type="text" id="nationality" placeholder="e.g. English">
+        </div>
+        <div class="field">
+          <label class="lbl">Age Group</label>
+          <select id="ageGroup">
+            <option value="">Select…</option>
+            <option>Under 7s</option><option>Under 8s</option><option>Under 9s</option>
+            <option>Under 10s</option><option>Under 11s</option><option>Under 12s</option>
+            <option>Under 13s</option><option>Under 14s</option><option>Under 15s</option>
+            <option>Under 16s</option><option>Under 17s</option><option>Under 18s</option>
+            <option>Adult</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- 03: Stats -->
+    <div class="section">
+      <div class="sec-label">03 — Season Stats</div>
+      <div class="stats-row">
+        <div class="stat-box"><label>Appearances</label><input type="number" id="statApps" placeholder="0" min="0" max="99"></div>
+        <div class="stat-box"><label>Goals</label><input type="number" id="statGoals" placeholder="0" min="0" max="99"></div>
+        <div class="stat-box"><label>Assists</label><input type="number" id="statAssists" placeholder="0" min="0" max="99"></div>
+        <div class="stat-box"><label>Rating</label><input type="number" id="statRating" placeholder="85" min="1" max="99"></div>
+      </div>
+      <div class="gap-sm"></div>
+      <div class="field" style="max-width:200px;">
+        <label class="lbl">Season</label>
+        <input type="text" id="season" placeholder="2025/26">
+      </div>
+    </div>
+
+    <!-- 04: Style (hidden for bundle/season/squad) -->
+    <div class="section" id="styleSection">
+      <div class="sec-label">04 — Card Style</div>
+      <div class="style-grid">
+        <div><input type="radio" name="cardStyle" id="s-home" value="Home Kit" class="style-r" checked><label for="s-home"><span class="s-icon">🏠</span>Home Kit</label></div>
+        <div><input type="radio" name="cardStyle" id="s-away" value="Away Kit" class="style-r"><label for="s-away"><span class="s-icon">✈️</span>Away Kit</label></div>
+        <div><input type="radio" name="cardStyle" id="s-chrome" value="Chrome" class="style-r"><label for="s-chrome"><span class="s-icon">💎</span>Chrome</label></div>
+        <div><input type="radio" name="cardStyle" id="s-stealth" value="Stealth" class="style-r"><label for="s-stealth"><span class="s-icon">🌑</span>Stealth</label></div>
+        <div><input type="radio" name="cardStyle" id="s-legends" value="Legends" class="style-r"><label for="s-legends"><span class="s-icon">📜</span>Legends</label></div>
+        <div><input type="radio" name="cardStyle" id="s-inferno" value="Inferno" class="style-r"><label for="s-inferno"><span class="s-icon">🔥</span>Inferno</label></div>
+        <div><input type="radio" name="cardStyle" id="s-ice" value="Ice" class="style-r"><label for="s-ice"><span class="s-icon">❄️</span>Ice</label></div>
+        <div><input type="radio" name="cardStyle" id="s-golden" value="Golden" class="style-r"><label for="s-golden"><span class="s-icon">🏅</span>Golden</label></div>
+      </div>
+    </div>
+
+    <!-- 05: Squad players (squad pack only) -->
+    <div class="section" id="squadSection" style="display:none;">
+      <div class="sec-label">04 — Squad Players</div>
+      <p style="font-size:12px;color:var(--text-muted);margin-bottom:16px;line-height:1.6;">Add each player. Each parent will receive their child's pack to their own email address.</p>
+      <div id="squadList"></div>
+      <button type="button" id="addPlayerBtn" style="margin-top:12px;background:var(--surface2);border:1px dashed var(--border-hover);color:var(--gold);font-family:'DM Mono',monospace;font-size:10px;letter-spacing:0.15em;text-transform:uppercase;padding:10px 20px;border-radius:3px;cursor:pointer;width:100%;transition:all 0.2s;">+ Add Player</button>
+    </div>
+
+    <!-- 06: Delivery -->
+    <div class="section">
+      <div class="sec-label" id="deliveryLabel">05 — Delivery</div>
+
+      <div class="season-note" id="seasonNote">
+        <strong>Season Pass</strong> — Your first card pack will be delivered immediately after payment. A new style will be sent to this email automatically on the same date each month for 5 further months. No action needed from you.
+      </div>
+      <div class="squad-note" id="squadNote">
+        <strong>Squad Pack</strong> — Enter the manager or organiser email below. Each individual player's pack will be sent directly to the parent email you enter per player above.
+      </div>
+      <div class="gap-sm"></div>
+
+      <div class="field" id="f-email">
+        <label class="lbl">Email Address *</label>
+        <input type="text" id="email" placeholder="you@example.com">
+        <span class="err">Valid email required</span>
+      </div>
+      <div class="gap"></div>
+      <div class="field">
+        <label class="lbl">Special Instructions (optional)</label>
+        <textarea id="notes" placeholder="e.g. Add captain's armband, use gold and black kit colours, card number 7…"></textarea>
+      </div>
+      <div class="gap"></div>
+
+      <!-- What's included strip -->
+      <div class="delivery-strip">
+        <div class="d-item"><span class="d-icon">🃏</span>Trading Card<br>1024×1024px</div>
+        <div class="d-item"><span class="d-icon">📱</span>Phone Wallpaper<br>Lock screen ready</div>
+        <div class="d-item"><span class="d-icon">📸</span>Instagram Square<br>Post-ready</div>
+        <div class="d-item"><span class="d-icon">🖼️</span>A4 Print Poster<br>300dpi</div>
+        <div class="d-item"><span class="d-icon">📋</span>Match Day<br>Programme</div>
+      </div>
+      <p style="font-size:10px;color:var(--text-muted);margin-top:10px;line-height:1.6;">
+        ⚡ Delivered to your inbox in under 60 seconds &nbsp;·&nbsp; Print the A4 poster at Tesco Photo for 19p &nbsp;·&nbsp; All files yours to keep and use forever
+      </p>
+    </div>
+
+    <!-- Status -->
+    <div class="banner" id="banner">
+      <span class="banner-icon" id="bannerIcon"></span>
+      <span id="bannerMsg"></span>
+    </div>
+
+    <!-- Submit -->
+    <div class="submit-row">
+      <div class="submit-info">
+        Instant digital delivery · 5 professional files<br>
+        Print at home · Share anywhere · Keep forever
+      </div>
+      <button class="btn" id="submitBtn" type="button" onclick="handleSubmit()">
+        <span class="label">Generate My Card Pack →</span>
+        <span class="loading"><span class="spin"></span>Creating…</span>
+      </button>
+    </div>
+
+  </div>
+  </form>
+
+</div>
+
+<script>
+// ─── CONFIG ──────────────────────────────────────────────────────────────────
+const WEBHOOK = 'https://hook.eu1.make.com/ty7trn1nbk48rjj4izwxn6nn6kbvgell'; // Replace before deploying
+// ─────────────────────────────────────────────────────────────────────────────
+
+let photoFile = null, photoBase64 = null;
+let squadPlayers = [];
+
+// ── Photo upload ──────────────────────────────────────────────────────────────
+const dropZone = document.getElementById('dropZone');
+const fileInput = document.getElementById('photoFile');
+
+fileInput.addEventListener('change', e => { if (e.target.files[0]) handlePhoto(e.target.files[0]); });
+dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('over'); });
+dropZone.addEventListener('dragleave', () => dropZone.classList.remove('over'));
+dropZone.addEventListener('drop', e => { e.preventDefault(); dropZone.classList.remove('over'); if (e.dataTransfer.files[0]) handlePhoto(e.dataTransfer.files[0]); });
+document.getElementById('removeBtn').addEventListener('click', e => { e.stopPropagation(); clearPhoto(); });
+
+function handlePhoto(file) {
+  if (!file.type.startsWith('image/')) return;
+  if (file.size > 10 * 1024 * 1024) { showBanner('fail', 'Photo must be under 10MB.'); return; }
+  photoFile = file;
+  const r = new FileReader();
+  r.onload = ev => {
+    photoBase64 = ev.target.result;
+    document.getElementById('prevThumb').src = photoBase64;
+    document.getElementById('prevName').textContent = file.name;
+    document.getElementById('prevSize').textContent = (file.size/1024).toFixed(0) + ' KB · ' + file.type.split('/')[1].toUpperCase();
+    document.getElementById('previewRow').classList.add('show');
+  };
+  r.readAsDataURL(file);
+}
+function clearPhoto() {
+  photoFile = null; photoBase64 = null;
+  fileInput.value = '';
+  document.getElementById('previewRow').classList.remove('show');
+}
+
+// ── Pack selector ─────────────────────────────────────────────────────────────
+const packDetails = ['single','double','bundle','season','squad'];
+document.querySelectorAll('.pack-radio').forEach(r => {
+  r.addEventListener('change', () => updatePackUI(r.value));
+});
+updatePackUI('single');
+
+function updatePackUI(pack) {
+  packDetails.forEach(p => {
+    const el = document.getElementById('detail-' + p);
+    el.classList.toggle('visible', p === pack);
+  });
+  // Hide style selector for multi-style packs
+  const styleSection = document.getElementById('styleSection');
+  const squadSection = document.getElementById('squadSection');
+  const seasonNote = document.getElementById('seasonNote');
+  const squadNote = document.getElementById('squadNote');
+  const deliveryLabel = document.getElementById('deliveryLabel');
+
+  styleSection.style.display = ['bundle','season','squad'].includes(pack) ? 'none' : '';
+  squadSection.style.display = pack === 'squad' ? '' : 'none';
+  seasonNote.classList.toggle('show', pack === 'season');
+  squadNote.classList.toggle('show', pack === 'squad');
+  deliveryLabel.textContent = pack === 'squad' ? '05 — Organiser Details' : '05 — Delivery';
+}
+
+// ── Squad players ─────────────────────────────────────────────────────────────
+document.getElementById('addPlayerBtn').addEventListener('click', addSquadPlayer);
+
+function addSquadPlayer() {
+  const id = Date.now();
+  squadPlayers.push(id);
+  const list = document.getElementById('squadList');
+  const row = document.createElement('div');
+  row.id = 'squad-' + id;
+  row.style.cssText = 'display:grid;grid-template-columns:1fr 1fr 1fr auto;gap:8px;margin-bottom:8px;align-items:end;';
+  row.innerHTML = `
+    <div class="field"><label class="lbl">Player Name</label><input type="text" placeholder="Player name"></div>
+    <div class="field"><label class="lbl">Parent Email</label><input type="text" placeholder="parent@email.com"></div>
+    <div class="field"><label class="lbl">Position</label><select><option>Goalkeeper</option><option>Defender</option><option>Midfielder</option><option>Striker</option></select></div>
+    <button type="button" onclick="removeSquadPlayer(${id})" style="background:var(--surface3);border:1px solid var(--border);color:var(--text-muted);padding:11px 12px;border-radius:3px;cursor:pointer;font-size:16px;margin-bottom:0;">×</button>
+  `;
+  list.appendChild(row);
+}
+
+function removeSquadPlayer(id) {
+  squadPlayers = squadPlayers.filter(p => p !== id);
+  const el = document.getElementById('squad-' + id);
+  if (el) el.remove();
+}
+
+// ── Validation ────────────────────────────────────────────────────────────────
+function validate() {
+  let ok = true;
+  const pack = document.querySelector('.pack-radio:checked')?.value;
+
+  // Photo required for non-squad
+  if (!photoFile && pack !== 'squad') {
+    showBanner('fail', 'Please upload a player photo before submitting.');
+    ok = false;
+  }
+
+  // Required text fields
+  [
+    { fid: 'f-playerName', id: 'playerName', fn: v => v.trim().length > 0 },
+    { fid: 'f-teamName',   id: 'teamName',   fn: v => v.trim().length > 0 },
+    { fid: 'f-position',   id: 'position',   fn: v => v !== '' },
+    { fid: 'f-email',      id: 'email',      fn: v => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v) }
+  ].forEach(({ fid, id, fn }) => {
+    const el = document.getElementById(id);
+    const field = document.getElementById(fid);
+    if (!fn(el.value)) { field.classList.add('bad'); ok = false; }
+    else field.classList.remove('bad');
+  });
+
+  return ok;
+}
+
+// ── Submit ────────────────────────────────────────────────────────────────────
+async function handleSubmit() {
+  clearBanner();
+  if (!validate()) return;
+
+  if (!WEBHOOK || WEBHOOK === 'YOUR_MAKE_WEBHOOK_URL') {
+    showBanner('fail', 'Webhook URL not configured. Add your Make.com webhook URL to the WEBHOOK constant.');
+    return;
+  }
+
+  const btn = document.getElementById('submitBtn');
+  btn.classList.add('working'); btn.disabled = true;
+
+  const pack = document.querySelector('.pack-radio:checked')?.value;
+  const cardStyle = document.querySelector('.style-r:checked')?.value || 'Home Kit';
+
+  // Collect squad data if squad pack
+  const squadData = [];
+  if (pack === 'squad') {
+    document.querySelectorAll('#squadList > div').forEach(row => {
+      const inputs = row.querySelectorAll('input, select');
+      squadData.push({
+        player_name: inputs[0]?.value || '',
+        parent_email: inputs[1]?.value || '',
+        position: inputs[2]?.value || ''
+      });
+    });
+  }
+
+  const payload = {
+    pack_type:    pack,
+    player_name:  document.getElementById('playerName').value.trim(),
+    team:         document.getElementById('teamName').value.trim(),
+    position:     document.getElementById('position').value,
+    nationality:  document.getElementById('nationality').value.trim(),
+    age_group:    document.getElementById('ageGroup').value,
+    card_style:   ['bundle','season','squad'].includes(pack) ? 'all' : cardStyle,
+    season:       document.getElementById('season').value.trim() || '2025/26',
+    stats: {
+      appearances: document.getElementById('statApps').value || '0',
+      goals:       document.getElementById('statGoals').value || '0',
+      assists:     document.getElementById('statAssists').value || '0',
+      rating:      document.getElementById('statRating').value || '0'
+    },
+    email:        document.getElementById('email').value.trim(),
+    notes:        document.getElementById('notes').value.trim(),
+    squad:        squadData,
+    photo_base64: photoBase64,
+    photo_filename: photoFile?.name || '',
+    submitted_at: new Date().toISOString(),
+    // Pricing reference
+    pack_price: { single:'7.99', double:'12.99', bundle:'24.99', season:'34.99', squad:'5.99pp' }[pack]
+  };
+
+  try {
+    const res = await fetch(WEBHOOK, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+
+    if (res.ok) {
+      const packLabels = { single:'Single Card Pack', double:'Double Pack', bundle:"Collector's Bundle", season:'Season Pass', squad:'Squad Pack' };
+      showBanner('ok', `✓ Order received! Your ${packLabels[pack]} for ${payload.player_name} is being generated. Check ${payload.email} — delivery in under 60 seconds.`);
+    } else {
+      showBanner('fail', `Webhook error (${res.status}). Check your Make.com scenario is active.`);
+    }
+  } catch (e) {
+    showBanner('fail', 'Could not reach the webhook. Check the URL and that your Make.com scenario is switched on.');
+  } finally {
+    btn.classList.remove('working'); btn.disabled = false;
+  }
+}
+
+function showBanner(type, msg) {
+  const b = document.getElementById('banner');
+  b.className = 'banner ' + type;
+  document.getElementById('bannerIcon').textContent = type === 'ok' ? '✓' : '⚠';
+  document.getElementById('bannerMsg').textContent = msg;
+  b.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+function clearBanner() { document.getElementById('banner').className = 'banner'; }
+
+// Live validation clear
+['playerName','teamName','position','email'].forEach(id => {
+  document.getElementById(id)?.addEventListener('input', () => {
+    document.getElementById('f-' + id)?.classList.remove('bad');
+  });
+});
+</script>
+</body>
+</html>
