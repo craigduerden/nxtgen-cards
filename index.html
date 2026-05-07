@@ -782,7 +782,7 @@ async function uploadPhotoToImgBB() {
     throw new Error('ImgBB error: ' + (data.error?.message || 'Unknown error'));
   }
 
-  return data.data.url; // e.g. https://i.ibb.co/xxxxx/photo.jpg
+return data.data.image.url;; // e.g. https://i.ibb.co/xxxxx/photo.jpg
 }
 
 // ── Photo upload ──────────────────────────────────────────────────────────────
